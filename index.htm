@@ -1,0 +1,237 @@
+<html>
+
+<head>
+    <title>Quiz finale</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 50px;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            color: #fff;
+            font-family: Helvetica, sans-serif;
+        }
+
+        .narrow {
+            padding-top: 20px;
+            flex-grow: 1;
+            transition: all 1s;
+        }
+
+        .wide {
+            padding-top: 20px;
+            flex-grow: 5;
+            transition: all 1s;
+        }
+
+        /* https://htmlcolorcodes.com/color-chart/ */
+
+        #team0 {
+            background-color: rgb(154, 125, 10);
+        }
+
+        #team1 {
+            background-color: rgb(148, 49, 38);
+        }
+
+        #team2 {
+            background-color: rgb(14, 102, 85);
+        }
+
+        #team3 {
+            background-color: rgb(26, 82, 118);
+        }
+
+        /* If you want the content centered horizontally and vertically */
+
+        .centered {
+            position: relative;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .score-circle {
+            border-radius: 50%;
+            width: 260px;
+            height: 140px;
+            padding: 60px 0px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #fff;
+            color: #fff;
+            text-align: center;
+            font-size: 128px;
+        }
+
+        .perk {
+            border-radius: 26px;
+            width: 300px;
+            height: 36px;
+            margin: auto;
+            padding: 8px 0px 8px 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #fff;
+            color: #fff;
+            text-align: left;
+            font-size: 26px;
+            font-weight: bold;
+            opacity: 1;
+            transition: all 1s;
+        }
+
+
+        .perk:hover {
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+        }
+
+        .perk-active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .perk-active:hover {
+            background: rgba(255, 255, 255, 0.4);
+            cursor: default;
+        }
+
+        .perk-invisible {
+            opacity: 0;
+            transition: all 0.5s;
+        }
+
+
+        /* Style the image inside the centered container, if needed */
+
+        .centered img {
+            width: 150px;
+            border-radius: 50%;
+        }
+    </style>
+    <script src="jquery.min.js"></script>
+    <script src="jquery.animateNumber.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+    </div>
+    <script type="text/javascript">
+        function set_active(team_id) {
+            for (var i = 0; i < num_teams; i++) {
+                team_bar = document.getElementById('team' + i);
+                if (i == team_id) {
+                    team_bar.className = 'wide';
+                    perks = team_bar.getElementsByClassName('perk');
+                    for (var j = 0; j < perks.length; j++) {
+                        perks[j].className = 'perk';
+                    }
+                } else {
+                    team_bar.className = 'narrow';
+                    perks = team_bar.getElementsByClassName('perk');
+                    for (var j = 0; j < perks.length; j++) {
+                        perks[j].className = 'perk perk-invisible';
+                    }
+                }
+            }
+        }
+
+        function update_score(team_id, value) {
+            var new_score = scores[team_id] + value;
+            if (new_score < 0) {
+                new_score = 0;
+            }
+            // document.getElementById('team' + team_id).getElementsByClassName('score-circle')[0].innerText = new_score;
+            $('#team' + team_id + ' .score-circle')
+                .prop('number', scores[team_id])
+                .animateNumber({ number: new_score }, 500);
+            scores[team_id] = new_score
+        }
+
+        function set_perk(team_id, perk_id) {
+            update_score(team_id, perk_values[perk_id]);
+            document.getElementById('team' + team_id).getElementsByClassName('perk')[perk_id].classList.add('perk-active');
+        }
+
+        function key_listener(event) {
+            console.log(event.keyCode)
+            switch (event.keyCode) {
+                case 48:
+                    // 0: wrong answer
+                    update_score(active_team, - 10);
+                    active_team = (active_team + 1) % num_teams;
+                    set_active(active_team);
+                    console.log('wrong answer');
+                    break;
+                case 49:
+                    // 1: right answer
+                    active_team = (active_team + 1) % num_teams;
+                    set_active(active_team);
+                    console.log('right answer');
+                    break;
+            }
+        }
+
+        var num_teams = 4;
+        var scores = [100, 100, 100, 100];
+        var team_names = ['Team 1', 'Team 2', 'Team 3', 'Team 4'];
+        var perk_names = ['- 2: tip', '- 3: dubbel antwoord', '- 5: hulplijn'];
+        var perk_values = [-2, -3, -5];
+        var active_team = 1;
+
+        // build
+        var perk_inner_html =
+            `
+                <br>
+                <br>
+                <div class="perk" onclick="set_perk(%team_id%, %perk_id%)">%perk_name%</div>
+        `
+        var bar_inner_html =
+            `
+        <div class="narrow" id="%team_id%">
+            <div class="centered">
+                <h2>%team_name%</h2>
+                <br>
+                <br>
+                <div class="score-circle">%score%</div>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                %perks%
+            </div>
+        </div>
+        `
+        var container = document.getElementsByClassName('container')[0];
+        added_content = ''
+        for (var i = 0; i < num_teams; i++) {
+            new_bar = bar_inner_html;
+            new_bar = new_bar.replace('%team_id%', 'team' + i);
+            new_bar = new_bar.replace('%team_name%', team_names[i]);
+            new_bar = new_bar.replace('%score%', scores[i]);
+            new_perks = ''
+            for (var k = 0; k < perk_names.length; k++) {
+                new_perk = perk_inner_html;
+                new_perk = new_perk.replace('%perk_name%', perk_names[k]);
+                new_perk = new_perk.replace('%team_id%', i);
+                new_perk = new_perk.replace('%perk_id%', k);
+                new_perks += new_perk;
+            }
+            new_bar = new_bar.replace('%perks%', new_perks);
+            added_content += new_bar;
+        }
+        container.innerHTML = added_content;
+        set_active(active_team);
+        document.body.onkeypress = key_listener;
+    </script>
+</body>
+
+</html>
