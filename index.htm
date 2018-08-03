@@ -158,6 +158,7 @@
         function set_perk(team_id, perk_id) {
             update_score(team_id, perk_values[perk_id]);
             document.getElementById('team' + team_id).getElementsByClassName('perk')[perk_id].classList.add('perk-active');
+            select.play();
         }
 
         function key_listener(event) {
@@ -168,13 +169,13 @@
                     update_score(active_team, - 10);
                     active_team = (active_team + 1) % num_teams;
                     set_active(active_team);
-                    console.log('wrong answer');
+                    wrong.play();
                     break;
                 case 49:
                     // 1: right answer
                     active_team = (active_team + 1) % num_teams;
                     set_active(active_team);
-                    console.log('right answer');
+                    right.play();
                     break;
             }
         }
@@ -182,9 +183,12 @@
         var num_teams = 4;
         var scores = [100, 100, 100, 100];
         var team_names = ['Team 1', 'Team 2', 'Team 3', 'Team 4'];
-        var perk_names = ['- 2: tip', '- 3: dubbel antwoord', '- 5: hulplijn'];
-        var perk_values = [-2, -3, -5];
+        var perk_names = ['- 3: dubbel antwoord', '- 4: tip', '- 5: hulplijn'];
+        var perk_values = [-3, -4, -5];
         var active_team = 1;
+        var right = new Audio('media/right.mp3');
+        var wrong = new Audio('media/wrong.wav');
+        var select = new Audio('media/select.wav');
 
         // build
         var perk_inner_html =
